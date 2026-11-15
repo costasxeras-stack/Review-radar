@@ -2,7 +2,7 @@
 
 **Collects app reviews from every App Store country and every Google Play language, uses Claude to group them into themes, and ranks what to fix first, with the evidence behind each rank.**
 
-Live demo: [review-radar-2ayp.onrender.com](https://review-radar-2ayp.onrender.com) (free hosting: first load can take ~1 minute) · Current version: **v0.1.0** ([changelog](CHANGELOG.md))
+Live demo: [reviews.kostasxeras.com](https://reviews.kostasxeras.com) (free hosting: first load can take ~1 minute) · Current version: **v0.1.0** ([changelog](CHANGELOG.md))
 
 ## Why this exists
 Product teams sit on thousands of reviews spread across stores, countries and languages. Nobody reads them all, so roadmap calls lean on the loudest anecdote. I wanted to answer one question: **can a small tool turn every public review of a product, in every market, into a ranked, explainable fix list in minutes, and how far can you trust it?**
