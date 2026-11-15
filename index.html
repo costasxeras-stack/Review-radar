@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review Radar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%231f5fbf%22/%3E%3C/svg%3E">
+<style>
+  :root { --ink:#1b2430; --muted:#5d6b7a; --line:#dde3ea; --bg:#f5f7fa; --card:#fff; --accent:#1f5fbf; --accent-soft:#e7effb; --bad:#b3261e; --ok:#1e7a46; --warn:#9a6700; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--ink); color:#fff; padding:18px 20px; }
+  header h1 { margin:0; font-size:20px; letter-spacing:.2px; }
+  header p { margin:4px 0 0; color:#c7d0db; font-size:14px; }
+  main { max-width:1040px; margin:0 auto; padding:16px; }
+  section.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:16px; }
+  section.card.locked { opacity:.55; pointer-events:none; }
+  h2 { margin:0 0 4px; font-size:17px; }
+  h2 .n { display:inline-block; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; text-align:center; font-size:13px; line-height:24px; margin-right:8px; }
+  .hint { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  label { font-weight:600; font-size:13px; display:block; margin:10px 0 4px; }
+  input[type=text], input[type=number], input[type=password], select { width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:7px; font:inherit; background:#fff; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .row > * { flex:1 1 200px; }
+  .row > .shrink { flex:0 0 auto; }
+  button { font:inherit; font-weight:600; padding:9px 16px; border-radius:7px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+  button.secondary { background:#fff; color:var(--accent); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .results { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .store h3 { font-size:14px; margin:0 0 6px; }
+  .app { display:flex; gap:10px; align-items:center; padding:8px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; cursor:pointer; }
+  .app.sel { border-color:var(--accent); background:var(--accent-soft); }
+  .app img { width:36px; height:36px; border-radius:8px; flex:0 0 36px; }
+  .app .t { font-weight:600; font-size:14px; }
+  .app .d { color:var(--muted); font-size:12px; }
+  .radio { display:flex; gap:16px; flex-wrap:wrap; margin:6px 0; }
+  .radio label { font-weight:500; display:flex; gap:6px; align-items:center; margin:0; }
+  .countries { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:2px 10px; max-height:240px; overflow:auto; border:1px solid var(--line); border-radius:8px; padding:8px; margin-top:8px; }
+  .countries label { font-weight:400; display:flex; gap:6px; margin:0; font-size:13px; }
+  .progress { height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-top:10px; }
+  .progress div { height:100%; width:0; background:var(--accent); transition:width .3s; }
+  .status { font-size:13px; color:var(--muted); margin-top:6px; min-height:20px; }
+  .error { color:var(--bad); }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:12px 0; }
+  .kpi { border:1px solid var(--line); border-radius:8px; padding:10px; }
+  .kpi b { display:block; font-size:20px; }
+  .kpi span { color:var(--muted); font-size:12px; }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap; }
+  tr.click { cursor:pointer; }
+  tr.click:hover, tr.active { background:var(--accent-soft); }
+  .bar { height:6px; background:var(--accent); border-radius:3px; margin-top:4px; }
+  .tag { display:inline-block; font-size:11px; padding:1px 7px; border-radius:10px; background:#eef1f5; color:var(--muted); }
+  .weights { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:4px 16px; }
+  .weights input { width:100%; }
+  .detail { border-left:3px solid var(--accent); padding:4px 0 4px 14px; margin-top:14px; }
+  .rev { border-top:1px solid var(--line); padding:10px 0; }
+  .rev .meta { font-size:12px; color:var(--muted); }
+  .rev .txt { white-space:pre-wrap; margin:4px 0; }
+  .rev .gist { font-size:13px; color:var(--muted); }
+  .note { background:#fff8e6; border:1px solid #f1dfa8; border-radius:8px; padding:10px 12px; font-size:13px; margin-top:10px; }
+  details summary { cursor:pointer; color:var(--accent); font-size:13px; margin-top:8px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; }
+  footer { text-align:center; color:var(--muted); font-size:12px; padding:10px 0 30px; }
+  @media (max-width: 640px) {
+    main { padding:10px; }
+    section.card { padding:14px; }
+    .results { grid-template-columns:1fr; }
+    .hide-sm { display:none; }
+    button { width:100%; }
+    .actions button { width:100%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Review Radar</h1>
+  <p>Collect customer reviews across markets, let AI group them into themes, and rank what to fix first.</p>
+</header>
+<main>
+
+<section class="card" id="s1">
+  <h2><span class="n">1</span>What are you researching?</h2>
+  <p class="hint">Search the App Store and Google Play, then pick the app on each store. You can also skip the stores and upload a CSV in step 2.</p>
+  <div class="row">
+    <div><label for="term">App or brand name</label><input type="text" id="term" autocomplete="off"></div>
+    <div class="shrink" style="flex-basis:150px"><label for="searchCountry">Search in store</label><select id="searchCountry"></select></div>
+    <div class="shrink"><button id="searchBtn">Search</button></div>
+  </div>
+  <div class="status" id="searchStatus"></div>
+  <div class="results" id="searchResults" hidden>
+    <div class="store"><h3>App Store</h3><div id="appleList"></div></div>
+    <div class="store"><h3>Google Play</h3><div id="playList"></div></div>
+  </div>
+  <details>
+    <summary>Enter store IDs by hand</summary>
+    <div class="row">
+      <div><label for="appleId">App Store ID (number in the app link)</label><input type="text" id="appleId" inputmode="numeric"></div>
+      <div><label for="playId">Google Play ID (e.g. com.company.app)</label><input type="text" id="playId"></div>
+    </div>
+  </details>
+  <label for="subject">Report title (product or brand)</label>
+  <input type="text" id="subject">
+</section>
+
+<section class="card" id="s2">
+  <h2><span class="n">2</span>Markets and sources</h2>
+  <p class="hint">"All markets" checks every App Store country and every Google Play language. Countries with no reviews are skipped automatically.</p>
+  <div class="radio">
+    <label><input type="radio" name="scope" value="all" checked> All markets</label>
+    <label><input type="radio" name="scope" value="pick"> Choose countries</label>
+  </div>
+  <div id="pickBox" hidden>
+    <input type="text" id="countryFilter" placeholder="Filter countries">
+    <div class="countries" id="countryList"></div>
+    <div class="actions" style="margin-top:6px"><button class="secondary" id="selNone" type="button">Clear</button></div>
+  </div>
+  <div class="row">
+    <div><label for="playPer">Google Play reviews per market</label><input type="number" id="playPer" value="150" min="20" max="500"></div>
+    <div><label for="csv">Add a CSV (optional)</label><input type="file" id="csv" accept=".csv,text/csv"></div>
+  </div>
+  <p class="hint" style="margin-top:6px">CSV columns: <code>text</code> (required), <code>rating</code>, <code>date</code>, <code>country</code>, <code>source</code>, <code>title</code>.</p>
+  <div class="status" id="csvStatus"></div>
+  <button id="collectBtn">Collect reviews</button>
+  <div class="progress" id="collectBar" hidden><div></div></div>
+  <div class="status" id="collectStatus"></div>
+  <div id="collectSummary"></div>
+</section>
+
+<section class="card locked" id="s3">
+  <h2><span class="n">3</span>Find themes with AI</h2>
+  <p class="hint">Claude proposes themes from a sample, then tags each analysed review with themes, sentiment and severity. Large sets are sampled evenly across markets.</p>
+  <div class="row">
+    <div><label for="maxReviews">Reviews to analyse</label><input type="number" id="maxReviews" min="30"></div>
+    <div id="pwBox" hidden><label for="pw">Lab password</label><input type="password" id="pw"></div>
+    <div class="shrink"><button id="analyzeBtn">Find themes</button></div>
+  </div>
+  <div class="progress" id="analyzeBar" hidden><div></div></div>
+  <div class="status" id="analyzeStatus"></div>
+  <details>
+    <summary>Open saved results instead</summary>
+    <input type="file" id="openJson" accept=".json,application/json" style="margin-top:8px">
+  </details>
+</section>
+
+<section class="card locked" id="s4">
+  <h2><span class="n">4</span>What to fix first</h2>
+  <p class="hint">The score combines four factors. Move the weights to see how the ranking changes. Tap a theme to read its reviews.</p>
+  <div class="row">
+    <div><label for="fSource">Source</label><select id="fSource"></select></div>
+    <div><label for="fMarket">Market</label><select id="fMarket"></select></div>
+  </div>
+  <div class="weights" id="weights"></div>
+  <div id="kpis" class="kpis"></div>
+  <div class="scroll"><table id="rankTable"></table></div>
+  <div id="detail"></div>
+  <div id="strengths"></div>
+  <div id="coverage"></div>
+</section>
+
+<section class="card locked" id="s5">
+  <h2><span class="n">5</span>Export</h2>
+  <div class="actions">
+    <button id="docxBtn">Word report</button>
+    <button class="secondary" id="csvBtn">Fix backlog (CSV)</button>
+    <button class="secondary" id="jsonBtn">Save results (JSON)</button>
+  </div>
+  <div class="status" id="exportStatus"></div>
+</section>
+
+<footer id="foot">Review Radar</footer>
+</main>
+
+<script src="/priority.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const regionName = (() => { try { const d = new Intl.DisplayNames(['en'], { type: 'region' }); return (c) => { try { return d.of(c.toUpperCase()) || c.toUpperCase(); } catch { return c.toUpperCase(); } }; } catch { return (c) => c.toUpperCase(); } })();
+const langName = (() => { try { const d = new Intl.DisplayNames(['en'], { type: 'language' }); return (l) => { try { return d.of(l) || l; } catch { return l; } }; } catch { return (l) => l; } })();
+const SOURCE = { apple: 'App Store', google_play: 'Google Play', csv: 'CSV' };
+const FACTORS = [['frequency', 'Frequency'], ['severity', 'Severity'], ['ratingImpact', 'Rating impact'], ['recency', 'Recency']];
+const state = { config: null, csvRows: null, collection: null, analysis: null, weights: { ...Priority.DEFAULT_WEIGHTS }, selected: null };
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function marketLabel(m) { if (!m) return '?'; if (m.startsWith('lang:')) return langName(m.slice(5)) + ' (language)'; if (m === 'CSV') return 'CSV'; return regionName(m); }
+function fmt(x, d = 1) { return x === null || x === undefined ? '–' : Number(x).toFixed(d); }
+function pct(x) { return Math.round(x * 100) + '%'; }
+function unlock(id) { $(id).classList.remove('locked'); }
+function setBar(id, frac) { const b = $(id); b.hidden = false; b.firstElementChild.style.width = Math.round(Math.max(0, Math.min(1, frac)) * 100) + '%'; }
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { 'content-type': 'application/json', ...(opts.headers || {}) } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+async function poll(jobId, onProgress) {
+  for (;;) {
+    await new Promise((r) => setTimeout(r, 1200));
+    const j = await api('/api/jobs/' + jobId);
+    if (j.status === 'done') return j.result;
+    if (j.status === 'error') throw new Error(j.error || 'Job failed');
+    onProgress(j.progress || {});
+  }
+}
+
+// ---------- Init ----------
+(async function init() {
+  try {
+    state.config = await api('/api/config');
+  } catch (e) { $('collectStatus').innerHTML = '<span class="error">Could not reach the server.</span>'; return; }
+  const c = state.config;
+  $('foot').textContent = `Review Radar v${c.version} · AI model: ${c.model}`;
+  const sorted = c.storefronts.slice().sort((a, b) => regionName(a).localeCompare(regionName(b)));
+  $('searchCountry').innerHTML = sorted.map((s) => `<option value="${s}" ${s === 'us' ? 'selected' : ''}>${esc(regionName(s))}</option>`).join('');
+  $('countryList').innerHTML = sorted.map((s) => `<label data-name="${esc(regionName(s).toLowerCase())}"><input type="checkbox" value="${s}"> ${esc(regionName(s))}</label>`).join('');
+  $('maxReviews').value = c.maxReviews; $('maxReviews').max = c.maxReviews;
+  $('pwBox').hidden = !c.passwordRequired;
+  if (!c.aiReady) $('analyzeStatus').innerHTML = '<span class="error">AI theming is not configured on this server (missing API key). You can still collect reviews and open saved results.</span>';
+  renderWeights();
+})();
+
+// ---------- Step 1: search ----------
+function appCard(a) {
+  const meta = [a.developer, a.rating ? `${fmt(a.rating)}★` : null, a.ratingCount ? `${a.ratingCount.toLocaleString()} ratings` : null].filter(Boolean).join(' · ');
+  return `<div class="app" data-store="${a.store}" data-id="${esc(a.id)}" data-name="${esc(a.name)}">${a.icon ? `<img src="${esc(a.icon)}" alt="">` : ''}<div><div class="t">${esc(a.name)}</div><div class="d">${esc(meta)}</div></div></div>`;
+}
+$('searchBtn').onclick = async () => {
+  const term = $('term').value.trim();
+  if (term.length < 2) { $('searchStatus').textContent = 'Type at least 2 characters.'; return; }
+  $('searchStatus').textContent = 'Searching…'; $('searchBtn').disabled = true;
+  try {
+    const r = await api(`/api/search?term=${encodeURIComponent(term)}&country=${$('searchCountry').value}`);
+    $('appleList').innerHTML = r.apple.map(appCard).join('') || `<p class="hint">${r.errors.apple ? 'App Store search failed: ' + esc(r.errors.apple) : 'No apps found.'}</p>`;
+    $('playList').innerHTML = r.play.map(appCard).join('') || `<p class="hint">${r.errors.play ? 'Google Play search failed: ' + esc(r.errors.play) : 'No apps found.'}</p>`;
+    $('searchResults').hidden = false; $('searchStatus').textContent = 'Tap the right app on each store (tap again to unselect).';
+    if (!$('subject').value) $('subject').value = term;
+  } catch (e) { $('searchStatus').innerHTML = `<span class="error">${esc(e.message)}</span>`; }
+  $('searchBtn').disabled = false;
+};
+$('term').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('searchBtn').click(); });
+$('searchResults').addEventListener('click', (e) => {
+  const card = e.target.closest('.app'); if (!card) return;
+  const store = card.dataset.store; const list = card.parentElement;
+  const wasSel = card.classList.contains('sel');
+  list.querySelectorAll('.app').forEach((x) => x.classList.remove('sel'));
+  const field = store === 'apple' ? $('appleId') : $('playId');
+  if (wasSel) { field.value = ''; return; }
+  card.classList.add('sel'); field.value = card.dataset.id;
+});
+
+// ---------- Step 2: markets, CSV, collect ----------
+document.querySelectorAll('input[name=scope]').forEach((r) => r.onchange = () => { $('pickBox').hidden = r.value !== 'pick' || !r.checked; });
+$('countryFilter').oninput = () => { const q = $('countryFilter').value.toLowerCase(); $('countryList').querySelectorAll('label').forEach((l) => { l.style.display = l.dataset.name.includes(q) ? '' : 'none'; }); };
+$('selNone').onclick = () => $('countryList').querySelectorAll('input').forEach((i) => { i.checked = false; });
+
+function parseCsv(text) {
+  const rows = []; let row = []; let f = ''; let q = false;
+  const firstLine = text.slice(0, text.indexOf('\n') > 0 ? text.indexOf('\n') : 2000);
+  const delim = firstLine.split(';').length > firstLine.split(',').length ? ';' : ',';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(f); f = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += ch;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  const head = (rows.shift() || []).map((h) => h.trim().toLowerCase().replace(/^﻿/, ''));
+  return { head, rows: rows.filter((r) => r.some((x) => x.trim())).map((r) => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? '').trim()]))) };
+}
+$('csv').onchange = async () => {
+  const file = $('csv').files[0]; state.csvRows = null; $('csvStatus').textContent = '';
+  if (!file) return;
+  const { head, rows } = parseCsv(await file.text());
+  if (!['text', 'review', 'comment', 'content'].some((h) => head.includes(h))) { $('csvStatus').innerHTML = '<span class="error">No "text" column found in the CSV header.</span>'; return; }
+  state.csvRows = rows;
+  $('csvStatus').textContent = `CSV ready: ${rows.length} rows${rows.length > 5000 ? ' (only the first 5,000 will be used)' : ''}.`;
+};
+
+$('collectBtn').onclick = async () => {
+  const scope = document.querySelector('input[name=scope]:checked').value;
+  const countries = scope === 'all' ? 'all' : [...$('countryList').querySelectorAll('input:checked')].map((i) => i.value);
+  const body = { appleId: $('appleId').value.trim() || null, playId: $('playId').value.trim() || null, countries, playPerMarket: Number($('playPer').value) || 150, csvRows: state.csvRows };
+  $('collectBtn').disabled = true; $('collectSummary').innerHTML = ''; $('collectStatus').textContent = 'Starting…'; setBar('collectBar', 0);
+  try {
+    const { jobId } = await api('/api/collect', { method: 'POST', body: JSON.stringify(body) });
+    const result = await poll(jobId, (p) => { if (p.total) { setBar('collectBar', p.done / p.total); $('collectStatus').textContent = `Checked ${p.done} of ${p.total} markets · ${p.collected} reviews so far`; } });
+    setBar('collectBar', 1);
+    state.collection = result;
+    renderCollection();
+  } catch (e) { $('collectStatus').innerHTML = `<span class="error">${esc(e.message)}</span>`; }
+  $('collectBtn').disabled = false;
+};
+
+function renderCollection() {
+  const { reviews, runs, quality: q } = state.collection;
+  $('collectStatus').textContent = `Done: ${reviews.length.toLocaleString()} unique reviews.`;
+  const withReviews = runs.filter((r) => r.count > 0);
+  const failed = runs.filter((r) => r.error);
+  const rated = reviews.filter((r) => r.rating);
+  const avg = rated.length ? rated.reduce((a, r) => a + r.rating, 0) / rated.length : null;
+  let html = `<div class="kpis">
+    <div class="kpi"><b>${reviews.length.toLocaleString()}</b><span>unique reviews</span></div>
+    <div class="kpi"><b>${withReviews.length}</b><span>markets with reviews (of ${runs.length} checked)</span></div>
+    <div class="kpi"><b>${fmt(avg)}★</b><span>average rating</span></div>
+    <div class="kpi"><b>${q.earliest ? q.earliest.slice(0, 10) : '–'}</b><span>oldest review${q.latest ? ' · newest ' + q.latest.slice(0, 10) : ''}</span></div></div>`;
+  html += `<div class="scroll"><table><tr><th>Source</th><th>Market</th><th>Reviews</th></tr>${withReviews.slice(0, 12).map((r) => `<tr><td>${SOURCE[r.source]}</td><td>${esc(marketLabel(r.market))}</td><td>${r.count}</td></tr>`).join('')}</table></div>`;
+  if (withReviews.length > 12) html += `<details><summary>Show all ${withReviews.length} markets</summary><div class="scroll"><table>${withReviews.slice(12).map((r) => `<tr><td>${SOURCE[r.source]}</td><td>${esc(marketLabel(r.market))}</td><td>${r.count}</td></tr>`).join('')}</table></div></details>`;
+  const notes = [];
+  if (q.duplicatesRemoved) notes.push(`${q.duplicatesRemoved} duplicate reviews removed.`);
+  if (q.missingDate) notes.push(`${q.missingDate} reviews have no date (left out of recency).`);
+  if (q.missingRating) notes.push(`${q.missingRating} reviews have no star rating (left out of rating averages).`);
+  if (failed.length) notes.push(`${failed.length} requests failed (${esc([...new Set(failed.map((f) => f.error))].slice(0, 2).join('; '))}). Those markets are missing from the data.`);
+  if (q.csv && (q.csv.skippedNoText || q.csv.badRating || q.csv.badDate)) notes.push(`CSV: ${q.csv.skippedNoText} rows without text skipped, ${q.csv.badRating} unreadable ratings, ${q.csv.badDate} unreadable dates.`);
+  if (reviews.some((r) => r.source === 'apple')) notes.push('App Store: Apple only publishes the 500 most recent reviews per country.');
+  if (notes.length) html += `<div class="note"><b>Data quality</b><br>${notes.join('<br>')}</div>`;
+  $('collectSummary').innerHTML = html;
+  if (reviews.length) { unlock('s3'); if (reviews.length < Number($('maxReviews').value)) $('maxReviews').value = Math.max(30, reviews.length); }
+}
+
+// ---------- Step 3: analyse ----------
+$('analyzeBtn').onclick = async () => {
+  if (!state.collection?.reviews?.length) return;
+  $('analyzeBtn').disabled = true; $('analyzeStatus').textContent = 'Starting…'; setBar('analyzeBar', 0);
+  try {
+    const { jobId } = await api('/api/analyze', { method: 'POST', headers: { 'x-lab-password': $('pw').value }, body: JSON.stringify({ reviews: state.collection.reviews, subject: $('subject').value.trim(), maxReviews: Number($('maxReviews').value) }) });
+    const result = await poll(jobId, (p) => { $('analyzeStatus').textContent = `${p.stage || 'Working'}${p.total > 1 ? ` · batch ${p.done} of ${p.total}` : ''}…`; setBar('analyzeBar', p.stage === 'Finding themes' ? 0.05 : 0.05 + 0.95 * (p.done / (p.total || 1))); });
+    setBar('analyzeBar', 1);
+    state.analysis = result;
+    $('analyzeStatus').textContent = `Done: ${result.coverage.analysed} reviews analysed, ${result.themes.length} themes found.`;
+    showResults();
+  } catch (e) { $('analyzeStatus').innerHTML = `<span class="error">${esc(e.message)}</span>`; }
+  $('analyzeBtn').disabled = false;
+};
+$('openJson').onchange = async () => {
+  const f = $('openJson').files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!data.analysis?.reviews || !data.analysis?.themes) throw new Error('This file is not a Review Radar results file.');
+    state.analysis = data.analysis; state.collection = data.collection || null;
+    if (data.subject) $('subject').value = data.subject;
+    if (data.weights) state.weights = { ...Priority.DEFAULT_WEIGHTS, ...data.weights };
+    renderWeights();
+    $('analyzeStatus').textContent = `Opened saved results from ${String(data.analysis.runAt || '').slice(0, 10)}.`;
+    showResults();
+  } catch (e) { $('analyzeStatus').innerHTML = `<span class="error">${esc(e.message)}</span>`; }
+};
+
+// ---------- Step 4: results ----------
+function showResults() {
+  unlock('s3'); unlock('s4'); unlock('s5');
+  const rs = state.analysis.reviews;
+  const sources = [...new Set(rs.map((r) => r.source))];
+  const markets = [...new Set(rs.map((r) => r.market))].sort((a, b) => marketLabel(a).localeCompare(marketLabel(b)));
+  $('fSource').innerHTML = '<option value="">All sources</option>' + sources.map((s) => `<option value="${s}">${SOURCE[s] || s}</option>`).join('');
+  $('fMarket').innerHTML = '<option value="">All markets</option>' + markets.map((m) => `<option value="${esc(m)}">${esc(marketLabel(m))}</option>`).join('');
+  state.selected = null;
+  renderResults();
+  $('s4').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function filtered() {
+  const s = $('fSource').value; const m = $('fMarket').value;
+  return state.analysis.reviews.filter((r) => r.tagged && (!s || r.source === s) && (!m || r.market === m));
+}
+function filterLabel() {
+  const parts = [];
+  if ($('fSource').value) parts.push(SOURCE[$('fSource').value]);
+  if ($('fMarket').value) parts.push(marketLabel($('fMarket').value));
+  return parts.join(', ');
+}
+$('fSource').onchange = $('fMarket').onchange = () => { state.selected = null; renderResults(); };
+
+function renderWeights() {
+  $('weights').innerHTML = FACTORS.map(([k, name]) => `<div><label for="w_${k}">${name}: <span id="wv_${k}">${state.weights[k]}</span></label><input type="range" id="w_${k}" min="0" max="100" step="5" value="${state.weights[k]}"></div>`).join('');
+  FACTORS.forEach(([k]) => { $('w_' + k).oninput = (e) => { state.weights[k] = Number(e.target.value); $('wv_' + k).textContent = e.target.value; if (state.analysis) renderResults(); }; });
+}
+
+function renderResults() {
+  const rs = filtered();
+  const stats = Priority.computeStats(rs, state.analysis.themes);
+  const { ranked, strengths } = Priority.score(stats, state.weights);
+  state.ranked = ranked;
+  const neg = rs.filter((r) => r.sentiment < 0).length;
+  $('kpis').innerHTML = `
+    <div class="kpi"><b>${rs.length.toLocaleString()}</b><span>analysed reviews in view</span></div>
+    <div class="kpi"><b>${fmt(stats.overallAvg)}★</b><span>average rating</span></div>
+    <div class="kpi"><b>${rs.length ? pct(neg / rs.length) : '–'}</b><span>negative</span></div>
+    <div class="kpi"><b>${ranked.length}</b><span>themes to fix</span></div>`;
+  const max = Math.max(1, ...ranked.map((t) => t.score));
+  $('rankTable').innerHTML = `<tr><th>#</th><th>Theme</th><th>Reviews</th><th>Avg ★</th><th class="hide-sm">Severity</th><th class="hide-sm">Recent</th><th>Score</th></tr>` +
+    (ranked.map((t) => `<tr class="click ${state.selected === t.id ? 'active' : ''}" data-id="${esc(t.id)}"><td>${t.rank}</td><td><b>${esc(t.name)}</b><br><span class="tag">${esc(t.type.replace('_', ' '))}</span></td><td>${t.count}<br><span class="tag">${pct(t.share)}</span></td><td>${fmt(t.avgRating)}</td><td class="hide-sm">${fmt(t.avgSeverity)} / 3</td><td class="hide-sm">${pct(t.recentShare)}</td><td><b>${fmt(t.score)}</b><div class="bar" style="width:${Math.round(100 * t.score / max)}%"></div></td></tr>`).join('')
+    || '<tr><td colspan="7" class="hint">No themes in this view.</td></tr>');
+  $('rankTable').querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => { state.selected = tr.dataset.id; state.showAll = false; renderResults(); $('detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+  renderDetail(rs, [...ranked, ...strengths]);
+  $('strengths').innerHTML = strengths.length ? `<h3 style="font-size:15px;margin:18px 0 6px">Strengths to protect</h3><div class="scroll"><table><tr><th>Theme</th><th>Reviews</th><th>Avg ★</th></tr>${strengths.map((t) => `<tr class="click" data-id="${esc(t.id)}"><td>${esc(t.name)}</td><td>${t.count}</td><td>${fmt(t.avgRating)}</td></tr>`).join('')}</table></div>` : '';
+  $('strengths').querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => { state.selected = tr.dataset.id; renderResults(); });
+  const c = state.analysis.coverage || {};
+  const notes = [`AI analysed ${c.analysed ?? '?'} of ${c.collected ?? '?'} collected reviews${c.analysed < c.collected ? ' (sample balanced across markets)' : ''}. Model: ${esc(state.analysis.model)}, run ${String(state.analysis.runAt || '').slice(0, 10)}.`];
+  if (c.untagged) notes.push(`${c.untagged} reviews could not be tagged because of AI errors and are left out.`);
+  if (c.unknownThemeIds) notes.push(`The AI returned ${c.unknownThemeIds} theme labels outside the list; those were dropped.`);
+  notes.push('Themes, severity and English summaries are AI-generated. Spot-check a sample before sharing conclusions.');
+  $('coverage').innerHTML = `<div class="note">${notes.join('<br>')}</div>`;
+}
+
+function renderDetail(rs, all) {
+  const t = all.find((x) => x.id === state.selected);
+  if (!t) { $('detail').innerHTML = ''; return; }
+  const list = rs.filter((r) => r.themes.includes(t.id)).sort((a, b) => (b.severity || 0) - (a.severity || 0) || (a.rating ?? 6) - (b.rating ?? 6));
+  const shown = list.slice(0, state.showAll ? 100 : 10);
+  $('detail').innerHTML = `<div class="detail"><h3 style="margin:0 0 4px;font-size:16px">${esc(t.name)}</h3>
+    <p style="margin:0 0 6px">${esc(t.description)}</p>
+    ${t.fix_hypothesis ? `<p style="margin:0 0 6px"><b>${t.type === 'praise' ? 'What to protect' : 'Fix hypothesis'} (AI-suggested, not validated):</b> ${esc(t.fix_hypothesis)}</p>` : ''}
+    <p class="hint">${list.length} reviews · markets: ${esc(t.markets.map(marketLabel).slice(0, 10).join(', '))}${t.markets.length > 10 ? ` and ${t.markets.length - 10} more` : ''}</p>
+    ${shown.map((r) => `<div class="rev"><div class="meta">${SOURCE[r.source] || r.source} · ${esc(marketLabel(r.market))} · ${r.rating ?? '?'}★ · ${r.date ? r.date.slice(0, 10) : 'no date'} · severity ${r.severity}</div>${r.title ? `<b>${esc(r.title)}</b>` : ''}<div class="txt">${esc(r.text)}</div>${r.gist ? `<div class="gist">AI summary in English (not a quote): ${esc(r.gist)}</div>` : ''}</div>`).join('')}
+    ${list.length > shown.length ? `<p class="hint">Showing the ${shown.length} most severe of ${list.length}. The CSV export includes all of them.</p>${state.showAll ? '' : '<button class="secondary" id="moreBtn">Show more</button>'}` : ''}</div>`;
+  const mb = $('moreBtn'); if (mb) mb.onclick = () => { state.showAll = true; renderResults(); };
+}
+
+// ---------- Step 5: export ----------
+function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+function slug() { return ($('subject').value || 'feedback').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'feedback'; }
+function csvCell(v) { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+
+$('docxBtn').onclick = async () => {
+  $('exportStatus').textContent = 'Building the Word report…'; $('docxBtn').disabled = true;
+  try {
+    const analysis = { ...state.analysis, reviews: filtered() };
+    const res = await fetch('/api/report', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subject: $('subject').value.trim(), analysis, collection: state.collection ? { quality: state.collection.quality } : null, weights: state.weights, filterLabel: filterLabel() }) });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Report failed');
+    download(`${slug()}-feedback-report.docx`, await res.blob());
+    $('exportStatus').textContent = 'Word report downloaded.';
+  } catch (e) { $('exportStatus').innerHTML = `<span class="error">${esc(e.message)}</span>`; }
+  $('docxBtn').disabled = false;
+};
+$('csvBtn').onclick = () => {
+  const rs = filtered();
+  const head = ['rank', 'theme', 'type', 'score', 'reviews', 'share', 'avg_rating', 'avg_severity', 'recent_share', 'markets', 'description', 'fix_hypothesis_ai'];
+  const lines = [head.join(',')].concat(state.ranked.map((t) => [t.rank, t.name, t.type, t.score, t.count, (t.share * 100).toFixed(1) + '%', fmt(t.avgRating), fmt(t.avgSeverity), (t.recentShare * 100).toFixed(0) + '%', t.markets.join(' '), t.description, t.fix_hypothesis].map(csvCell).join(',')));
+  lines.push('', ['review_id', 'source', 'market', 'rating', 'date', 'severity', 'sentiment', 'themes', 'text_verbatim', 'ai_summary_en'].join(','));
+  const names = Object.fromEntries(state.analysis.themes.map((t) => [t.id, t.name]));
+  rs.forEach((r) => lines.push([r.id, SOURCE[r.source] || r.source, r.market, r.rating, r.date, r.severity, r.sentiment, r.themes.map((x) => names[x]).join(' | '), r.text, r.gist].map(csvCell).join(',')));
+  download(`${slug()}-fix-backlog.csv`, new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  $('exportStatus').textContent = 'Backlog CSV downloaded (themes first, then every review).';
+};
+$('jsonBtn').onclick = () => {
+  const data = { app: 'review-radar', version: state.config?.version, subject: $('subject').value.trim(), weights: state.weights, analysis: state.analysis, collection: state.collection ? { quality: state.collection.quality, runs: state.collection.runs } : null };
+  download(`${slug()}-results.json`, new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  $('exportStatus').textContent = 'Results saved. Open this file in step 3 later to see them again without a new AI run.';
+};
+</script>
+</body>
+</html>

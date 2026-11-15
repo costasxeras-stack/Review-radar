@@ -1,0 +1,22 @@
+{
+  "name": "review-radar",
+  "version": "0.1.0",
+  "description": "Collect app reviews across every market, theme them with Claude, and rank what to fix first.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:stub": "ANTHROPIC_API_KEY=test node -r ./tests/stub.js server.js",
+    "test": "node tests/unit.test.js"
+  },
+  "author": "Konstantinos Xeras",
+  "license": "MIT",
+  "dependencies": {
+    "docx": "^9.15.4",
+    "express": "^5.3.0",
+    "google-play-scraper": "^10.1.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
