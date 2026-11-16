@@ -2,6 +2,11 @@
 
 All notable changes to Review Radar. Versions follow [docs/versioning.md](docs/versioning.md).
 
+## [0.1.1] - 2026-11-16
+
+### Changed
+- Documentation wording only: shorter sentences, fewer semicolons and less bold text, so the docs read more plainly. No change to how the app works.
+
 ## [0.1.0] - 2026-11-15
 
 ### Added
@@ -13,6 +18,6 @@ All notable changes to Review Radar. Versions follow [docs/versioning.md](docs/v
 - AI theming with Claude in two passes (discover themes, then tag every review), with sentiment, severity 0–3 and an English summary per review.
 - Country-balanced sampling for large data sets, with "analysed X of Y collected" shown everywhere.
 - Fix-priority score (frequency, severity, rating impact, recency) with adjustable weights, plus a separate "strengths to protect" list.
-- Filters by source and market; tap a theme to read its verbatim reviews.
+- Filters by source and market. Tap a theme to read its verbatim reviews.
 - Exports: Word report, fix backlog CSV, and a results file you can reopen without a new AI run.
 - Optional lab password to protect the paid AI step.

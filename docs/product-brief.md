@@ -4,9 +4,9 @@
 Public reviews are the largest free source of customer feedback, but they are scattered across two stores, 170+ countries and dozens of languages. Teams sample a handful, usually in their own language, and miss problems that are concentrated in other markets.
 
 ## Users
-- **Product managers** deciding what goes on the next roadmap.
-- **Customer experience and support leads** looking for recurring complaints.
-- **Market or country managers** comparing how a product lands in their market.
+- Product managers deciding what goes on the next roadmap.
+- Customer experience and support leads looking for recurring complaints.
+- Market or country managers comparing how a product lands in their market.
 
 ## Goals
 - Collect every public review a store will give, in every market, in one run.
@@ -23,7 +23,7 @@ Public reviews are the largest free source of customer feedback, but they are sc
 - Social media, forums and review sites (Reddit, YouTube, Trustpilot, Google Maps).
 - Accounts, saved projects or scheduled re-runs.
 - Replying to reviews.
-- Human-validated accuracy (planned; see the case study).
+- Human-validated accuracy (planned. See the case study).
 
 ## Success signals
 - A PM can go from app name to report in [__] minutes.

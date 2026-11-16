@@ -1,6 +1,6 @@
 # Case study: what customers in every market ask a product team to fix
 
-> Status: template. v0.1.0 has only been run on synthetic data. Fill in after the first live run; no numbers below are real yet.
+> Status: template. v0.1.0 has only been run on synthetic data. Fill in after the first live run. No numbers below are real yet.
 
 ## The question
 Can every public review of a product, across all markets and languages, be turned into a ranked and explainable fix list, and how far can the AI part be trusted?
@@ -16,10 +16,10 @@ Can every public review of a product, across all markets and languages, be turne
 - Reviews collected: [__] from [__] markets. Analysed: [__].
 - Average rating: [__]★.
 - Top theme: [__], [__%] of reviews.
-- AI-to-human agreement on themes: [__%]; on severity: [__%].
+- AI-to-human agreement on themes: [__%]. On severity: [__%].
 
 ## Findings
-For each: what, evidence (verbatim reviews with market and date), why it matters, **confirmed** or **hypothesis**.
+For each: what, evidence (verbatim reviews with market and date), why it matters, confirmed or hypothesis.
 1. [Finding]
 2. [Finding]
 3. [Finding]
