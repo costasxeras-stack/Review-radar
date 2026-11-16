@@ -10,5 +10,5 @@ Score = weighted sum of four 0–1 factors: frequency (vs the largest theme), se
 
 ## Consequences
 - Anyone can explain why a theme ranks where it does, and test other weightings live.
-- The score ignores business value such as revenue or support cost; the report leaves a placeholder for that.
+- The score ignores business value such as revenue or support cost. The report leaves a placeholder for that.
 - Recency is measured from the newest review, not today, so reopening old results gives the same numbers.

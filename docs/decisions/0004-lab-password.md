@@ -10,4 +10,4 @@ If `LAB_PASSWORD` is set on the server, the AI step requires it. Collection, exp
 
 ## Consequences
 - Visitors can still see the whole flow by opening a saved results file.
-- The password is shared by hand; there are no user accounts.
+- The password is shared by hand. There are no user accounts.

@@ -1,6 +1,6 @@
 {
   "name": "review-radar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Collect app reviews across every market, theme them with Claude, and rank what to fix first.",
   "main": "server.js",
   "scripts": {
